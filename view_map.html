@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="UTF-8">
+<title>地图DEMO</title>
+<script type="text/javascript"
+	src="http://api.map.baidu.com/api?v=2.0&ak=E1ec599cbc4a8006eb37d99cf002e054"></script>
+<script type="text/javascript" src="js/jquery-3.2.1.min.js"></script>
+<script type="text/javascript" src="js/equipmentMapUtil.js"></script>
+<script type="text/javascript">
+	$(document).ready(function() {
+		$.ajax({
+			url: "house_info.json",//json文件位置
+			type: "GET",//请求方式为get
+			dataType: "json", //返回数据格式为json
+			success: function(data) {//请求成功完成后要执行的方法
+				//each循环 使用$.each方法遍历返回的数据date
+				$.each(data.first, function(i, item) {
+				// var str = '<div>姓名:' + item.name + '性别：' + item.sex + '</div>';
+				alert("file contents:" + item.commu + "!");
+				})
+			}
+		})
+		//alert("file contents:" + s + "!");
+		var map = new BMap.Map("allmap"); // 创建Map实例
+		map.centerAndZoom("上海", 15);
+		map.addControl(new BMap.MapTypeControl()); //添加地图类型控件
+
+		var options = {
+			renderOptions : {
+				map : map,
+				selectFirstResult : true
+			},
+			onSearchComplete : function(results) {
+				//这个函数会被调用两次
+			}
+		};
+
+		map.enableScrollWheelZoom(true); //开启鼠标滚轮缩放
+		
+		/**
+		 * 第一个参数是城市名，第二参数是小区名 
+		 */
+		var showArea = function(city, area){
+			queryHouse(area, city, "E1ec599cbc4a8006eb37d99cf002e054", function(data){
+				if(data.message == 'ok'){
+					var houses = data.results;
+					if(houses && houses.length > 0){
+						var house = houses[0];
+						queryHouseOutline(house.uid, function(houseOutline){
+							var geo = houseOutline.content.geo; if(!geo){ var location = house.location;
+								var point = new BMap.Point(location.lng, location.lat);
+								map.centerAndZoom(point, 19);
+								var marker = new BMap.Marker(point);
+								marker.setAnimation(BMAP_ANIMATION_BOUNCE); 
+								map.addOverlay(marker);
+							}else{
+								//map.clearOverlays();
+								var geoObj = parseGeo(geo);
+								//var bounds = coordinateToPoints(geoObj.bound);
+								//边界点
+								var points = coordinateToPoints(map, geoObj.points);
+								var ply = new BMap.Polygon(points, {
+									strokeWeight: 2,
+									strokeColor: "#F01B2D",
+									strokeOpacity: 0.9,
+									fillColor : "#FFEBCC"
+								}); //建立多边形覆盖物
+								map.addOverlay(ply); //添加覆盖物
+								//map.setViewport(ply.getPath()); //调整视野 
+							}
+						});
+					}
+				}
+			});
+		};
+		//showArea($('#cityId').val(), $('#areaId').val());
+		showArea('上海','潍坊十村');
+	/*
+		showArea('上海','泉东小区');
+		showArea('上海','朱家滩');
+		showArea('上海','开发浦东');
+		showArea('上海','潍坊十村');
+		showArea('上海','潍坊九村');
+		showArea('上海','繁荣昌盛');
+		ifstream is;
+		Json::Reader reader;
+		is.open("house_info.json", ios::binary);
+		<!-- 读取一行内容 -->
+		while(str = is.ReadLine()) {
+			var json = eval('(' + str + ')');
+			showArea('上海',$(json['commu']).val());
+		}
+		//stub
+		showArea('上海','泉东小区');
+		showArea('上海','朱家滩');
+		showArea('上海','开发浦东');
+		showArea('上海','繁荣昌盛');
+		showArea('上海','潍坊十村');
+		showArea('上海','潍坊九村');
+		fso = new ActiveXObject("Scripting.FileSystemObject");
+		ts = fso.OpenTextFile("/Users/JoyceMMing/Desktop/Jacky/Python/house/house_info.json", ForReading);
+		s = ts.ReadLine();
+		alert("file contents:" + s + "!");
+		while(s = ts.ReadLine()) {
+		    alert("file contents:" + s + "!");
+		}
+		showArea('上海','潍坊九村');
+		ts.close();
+		*/
+
+		$('#showBtn').click(function(){
+			debugger;
+			showArea($('#cityId').val(), $('#areaId').val());
+			showArea($('#cityId').val(), $('#areaId').val());
+		});
+	});
+</script>
+</head>
+<body>
+	<table>
+		<tr>
+			<td>城市:</td>
+			<td><input id="cityId" type="text" value="上海" /></td>
+			<td>小学:</td>
+			<td><input id="areaId" type="text" value="明珠小学" /></td>
+			<td>
+				<button id="showBtn">显示</button>
+			</td>
+		</tr>
+	</table>
+	<div id="allmap" style="width: 1360px; height: 720px;"></div>
+	<script type="text/javascript">
+		
+	</script>
+</body>
+</html>
