@@ -62,6 +62,7 @@
 			});
 		};
 		//showArea($('#cityId').val(), $('#areaId').val());
+		//fetch("./data_files/上海市浦东新区明珠小学\(A区\).json").then(response => response.json()).then(data => {
 		fetch("house_info.json").then(response => response.json()).then(data => {
 			console.log(data)
 			data.forEach(line => {

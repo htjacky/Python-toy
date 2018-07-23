@@ -14,13 +14,8 @@ def school_estate_parser(file_name, schools =[], sheet_name = 'sheet1'):
 
   print(df2)
   df2.to_excel('se.xls', index = False)
-  
-  
 
-
-
-
-  # stub for file and schools
+# stub for file and schools
 pd_file = "2016PDXX.xls"
 list0 = []
 list1 = ["明珠小学", "福山外国语","上海实验学校", "第六师范附属"]
@@ -29,5 +24,5 @@ list3 = ["浦明师范学校", "建平实验小学","浦东南路","洋泾实验
         "昌邑小学","第二中心小学","竹园小学","进才实验","菊园"]
 
 school_list = list1 + list2 + list3
-school_estate_parser(pd_file, list0, '浦东新区')
-  # endstub
+school_estate_parser(pd_file, school_list, '浦东新区')
+# endstub
