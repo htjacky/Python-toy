@@ -9,19 +9,6 @@
 <script type="text/javascript" src="js/equipmentMapUtil.js"></script>
 <script type="text/javascript">
 	$(document).ready(function() {
-		$.ajax({
-			url: "house_info.json",//json文件位置
-			type: "GET",//请求方式为get
-			dataType: "json", //返回数据格式为json
-			success: function(data) {//请求成功完成后要执行的方法
-				//each循环 使用$.each方法遍历返回的数据date
-				$.each(data.first, function(i, item) {
-				// var str = '<div>姓名:' + item.name + '性别：' + item.sex + '</div>';
-				alert("file contents:" + item.commu + "!");
-				})
-			}
-		})
-		//alert("file contents:" + s + "!");
 		var map = new BMap.Map("allmap"); // 创建Map实例
 		map.centerAndZoom("上海", 15);
 		map.addControl(new BMap.MapTypeControl()); //添加地图类型控件
@@ -75,7 +62,12 @@
 			});
 		};
 		//showArea($('#cityId').val(), $('#areaId').val());
-		showArea('上海','潍坊十村');
+		fetch("house_info.json").then(response => response.json()).then(data => {
+			console.log(data)
+			data.forEach(line => {
+			    showArea('上海',line['commu']);
+			})
+		});
 	/*
 		showArea('上海','泉东小区');
 		showArea('上海','朱家滩');
