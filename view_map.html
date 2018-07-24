@@ -65,9 +65,15 @@
 		//fetch("./data_files/上海市浦东新区明珠小学\(A区\).json").then(response => response.json()).then(data => {
 		fetch("house_info.json").then(response => response.json()).then(data => {
 			console.log(data)
-			data.forEach(line => {
-			    showArea('上海',line['commu']);
-			})
+			// data.forEach(line => {
+			//     showArea('上海',line['commu']);
+			// });
+			data.map((line, i) => new Promise(resolve => {
+				setTimeout(() => {
+					showArea('上海',line['commu']);
+					resolve();
+				}, i * 500);
+			}));
 		});
 	/*
 		showArea('上海','泉东小区');
