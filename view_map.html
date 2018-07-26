@@ -62,46 +62,16 @@
 			});
 		};
 		//showArea($('#cityId').val(), $('#areaId').val());
-		//fetch("./data_files/上海市浦东新区明珠小学\(A区\).json").then(response => response.json()).then(data => {
 		fetch("house_info.json").then(response => response.json()).then(data => {
 			console.log(data)
-			data.forEach(line => {
-			    showArea('上海',line['commu']);
-			})
+			return data.map((line, i) => new Promise(resolve => {
+				setTimeout(() => {
+					showArea('上海', line['commu']);
+					resolve();
+				}, i*1000);
+			}));
+		//	})
 		});
-	/*
-		showArea('上海','泉东小区');
-		showArea('上海','朱家滩');
-		showArea('上海','开发浦东');
-		showArea('上海','潍坊十村');
-		showArea('上海','潍坊九村');
-		showArea('上海','繁荣昌盛');
-		ifstream is;
-		Json::Reader reader;
-		is.open("house_info.json", ios::binary);
-		<!-- 读取一行内容 -->
-		while(str = is.ReadLine()) {
-			var json = eval('(' + str + ')');
-			showArea('上海',$(json['commu']).val());
-		}
-		//stub
-		showArea('上海','泉东小区');
-		showArea('上海','朱家滩');
-		showArea('上海','开发浦东');
-		showArea('上海','繁荣昌盛');
-		showArea('上海','潍坊十村');
-		showArea('上海','潍坊九村');
-		fso = new ActiveXObject("Scripting.FileSystemObject");
-		ts = fso.OpenTextFile("/Users/JoyceMMing/Desktop/Jacky/Python/house/house_info.json", ForReading);
-		s = ts.ReadLine();
-		alert("file contents:" + s + "!");
-		while(s = ts.ReadLine()) {
-		    alert("file contents:" + s + "!");
-		}
-		showArea('上海','潍坊九村');
-		ts.close();
-		*/
-
 		$('#showBtn').click(function(){
 			debugger;
 			showArea($('#cityId').val(), $('#areaId').val());

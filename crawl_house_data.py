@@ -4,9 +4,7 @@
 # FangTianXia https://blog.csdn.net/yiranhwj/article/details/52680536
 #             https://zhuanlan.zhihu.com/p/25713752
 # AnJuKe https://segmentfault.com/a/1190000013932818
-
-#class house_spider(object):
-#    def
+# 2018.7.25 first implement only with Lianjia data
 
 from bs4 import BeautifulSoup
 
@@ -16,35 +14,20 @@ import urllib.request
 import math
 import codecs
 import pandas as pd
-import numpy as np
 
+import excel_parser
 import view_house
 
 lj_domain='http://sh.lianjia.com/'
 lj_house_url = lj_domain + 'ershoufang/pudong/'
-se_file='se.xls'
+#se_file='se.xls'
 num_per_page = 30.0
 down_price = 100
 up_price = 1000
 
-def get_all_community_list(house_file):
-    #df = pd.read_excel(house_file, 'Sheet1', usecols=[6])
-    df = pd.read_excel(house_file, 'Sheet1', usecols=[3,6])
-    df = df.drop_duplicates()
-    np_data = np.array(df)
-    all_commu_list = np_data.tolist()
-    print(all_commu_list)
-    return all_commu_list
-
-def get_all_school_list(house_file):
-    df = pd.read_excel(house_file, 'Sheet1', usecols=[3])
-    df = df.drop_duplicates()
-    np_data = np.array(df)
-    all_school_list = np_data.tolist()
-    print(all_school_list)
-    return all_school_list
-
-def getHouseInfo(house_soup, h_list, comm_name):
+#def getHouseInfo(house_soup, h_list, comm_name):
+#def getHouseInfo(house_soup, comm_name, school_str):
+def getHouseInfo(house_soup, comm_name, school_str, h_list):
     for tag in  house_soup.find('ul',class_='sellListContent').find_all('div', class_="info"):
         href        = tag.find('a').get('href')
         title       = tag.find('a').string
@@ -55,17 +38,23 @@ def getHouseInfo(house_soup, h_list, comm_name):
         total_price = tag.find('div',class_="totalPrice").span.string + \
                 tag.find('div',class_="totalPrice").span.next_sibling
         unit_price  = tag.find('div',class_="unitPrice").span.string
-        house_info  = [href, title, addr_commu, addr_info, total_price, unit_price]
+        #house_info  = [href, title, addr_commu, addr_info, total_price, unit_price]
+        house_info  = [href, title, addr_commu, addr_info, total_price, unit_price, school_str]
         if addr_commu.find(comm_name) != -1:
             print('%s is %s, Add:\n%s\n' %(addr_commu, comm_name, house_info))
             h_list.append(house_info)
+            #return house_info
         else:
+            # here is a bug: 广洋苑  is not 广洋苑二期, just skip
+            # 东方城市花园(一期)  is not 东方城市花园一期
+            #大华锦绣华城(十一街区)  is not 11街区, just skip:  ['上海市浦东新区昌邑小学(大华校区)'] 
             print('%s is not %s, just skip:\n%s\n' %(addr_commu, comm_name, house_info))
 
 
 def getHouseInfoForOneCommu(community, house_list):
+#def getHouseInfoForOneCommu(community):
     house_num = 0
-    #comm_url=r'http://sh.lianjia.com/ershoufang/lc2lc1bp200ep400rs潍坊二村/'
+    #house_list = []
     print(community)
     comm_str = str(community[1]).strip('[]')
     comm_str = comm_str.strip('\'')
@@ -73,6 +62,7 @@ def getHouseInfoForOneCommu(community, house_list):
     school_str = school_str.strip('\'')
     print(comm_str)
     print(school_str)
+    #comm_url=r'http://sh.lianjia.com/ershoufang/lc2lc1bp200ep400rs潍坊二村/'
     comm_url = lj_house_url + 'lc2lc1bp' + str(down_price) + 'ep' + str(up_price) + 'rs' \
         + urllib.parse.quote(comm_str)
     print(comm_url)
@@ -90,16 +80,21 @@ def getHouseInfoForOneCommu(community, house_list):
         print('no house found')
         return house_list
 
-    if house_num > 100:
-        print('100+ house in %s found, maybe the address is wrong!!!\n' %comm_str)
+    if house_num > 300:
+        print('300+ house in %s found, maybe the address is wrong!!!\n' %comm_str)
         return house_list
    
     try:
-        # store all the house info with the same school in a data file
         #view_house.store_house_info(comm_str, school_str, house_num)
+        # store all the house info with the same school in a data file
         # a stub to store in house_info.json
-        view_house.show_house_info(comm_str, house_num)
-        getHouseInfo(xiaoqu_soup,house_list,comm_str)
+        #view_house.store_all_house_info(comm_str, house_num)
+        view_house.store_all_house_info(comm_str, school_str, house_num)
+   
+        #getHouseInfo(xiaoqu_soup,house_list,comm_str)
+        getHouseInfo(xiaoqu_soup, comm_str, school_str, house_list)
+        #house_list.append(getHouseInfo(xiaoqu_soup,comm_str))
+        #house_list.append(getHouseInfo(xiaoqu_soup,comm_str, school_str))
     except:
         print("store %s failed!\n" %comm_str)
         return house_list 
@@ -110,23 +105,34 @@ def getHouseInfoForOneCommu(community, house_list):
             + 'ep' + str(up_price) + 'rs' + urllib.parse.quote(comm_str)
         page_html_doc= urllib.request.urlopen(page_url).read()
         page_soup = BeautifulSoup(page_html_doc, 'html.parser')
-        getHouseInfo(page_soup,house_list,comm_str)
+        #getHouseInfo(page_soup,house_list,comm_str)
+        getHouseInfo(page_soup, comm_str, school_str, house_list)
+        #house_list.append(getHouseInfo(page_soup,comm_str, school_str))
     return house_list
 
-school_list = get_all_school_list(se_file)
+
+
+
+# Start from here
+school_list = excel_parser.get_all_school_list(excel_parser.se_file)
 for school in school_list:
     school_name = str(school).strip('[]').strip('\'')
     view_house.reset_json_files(school_name)
 
-community_list = get_all_community_list(se_file)
+# a stub to store in house_info.json
+view_house.reset_json_files(view_house.stub_info_file)
+
+# store all the data into database by school name
+community_list = excel_parser.get_all_community_list(excel_parser.se_file)
 all_house_data = []
 for community in community_list:
     getHouseInfoForOneCommu(community, all_house_data)
+    #all_house_data.append(getHouseInfoForOneCommu(community))
 
 for school in school_list:
     school_name = str(school).strip('[]').strip('\'')
-    #school_name = school_name.strip('\'')
     view_house.format_json_files(school_name)
 
+# store all the data into excel to check
 house_df = pd.DataFrame(all_house_data)
-house_df.to_excel('lianjia_house_info.xls')
+house_df.to_excel(view_house.data_dir + 'lianjia_house_info.xls')
