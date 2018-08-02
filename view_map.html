@@ -62,7 +62,7 @@
 			});
 		};
 		//showArea($('#cityId').val(), $('#areaId').val());
-		fetch("house_info.json").then(response => response.json()).then(data => {
+		fetch("database/house_info.json").then(response => response.json()).then(data => {
 			console.log(data)
 			return data.map((line, i) => new Promise(resolve => {
 				setTimeout(() => {

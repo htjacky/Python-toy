@@ -31,7 +31,7 @@ def store_all_house_info(comm_str, school_str, house_num):
     #str_temp = '{"commu":\"' + commu_str + '\","lat":' + str(lat) + ',"lng":' + str(lng) + \
     #        ',"count":' + str(house_num) +'},\n'
     #str_temp = '{"commu":\"' + comm_str + '\",count":' + str(house_num) +'},\n'
-    str_temp = '{"commu":\"' + comm_str + '\","school ":' + school_str + '\","count":' + str(house_num) +'},\n'
+    str_temp = '{"commu":\"' + comm_str + '\","school":"' + school_str + '\","count":' + str(house_num) +'},\n'
     json_file = open(data_dir + stub_info_file + '.json', 'a')
     json_file.write(str_temp)
     json_file.close()

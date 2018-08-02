@@ -23,7 +23,7 @@ lj_house_url = lj_domain + 'ershoufang/pudong/'
 #se_file='se.xls'
 num_per_page = 30.0
 down_price = 100
-up_price = 1000
+up_price = 450
 
 #def getHouseInfo(house_soup, h_list, comm_name):
 #def getHouseInfo(house_soup, comm_name, school_str):
@@ -39,9 +39,9 @@ def getHouseInfo(house_soup, comm_name, school_str, h_list):
                 tag.find('div',class_="totalPrice").span.next_sibling
         unit_price  = tag.find('div',class_="unitPrice").span.string
         #house_info  = [href, title, addr_commu, addr_info, total_price, unit_price]
-        house_info  = [href, title, addr_commu, addr_info, total_price, unit_price, school_str]
+        house_info  = [href, title, addr_commu, addr_info, total_price.strip("万"), unit_price, school_str]
         if addr_commu.find(comm_name) != -1:
-            print('%s is %s, Add:\n%s\n' %(addr_commu, comm_name, house_info))
+            #print('%s is %s, Add:\n%s\n' %(addr_commu, comm_name, house_info))
             h_list.append(house_info)
             #return house_info
         else:
@@ -60,12 +60,12 @@ def getHouseInfoForOneCommu(community, house_list):
     comm_str = comm_str.strip('\'')
     school_str = str(community[0]).strip('[]')
     school_str = school_str.strip('\'')
-    print(comm_str)
-    print(school_str)
+    #print(comm_str)
+    #print(school_str)
     #comm_url=r'http://sh.lianjia.com/ershoufang/lc2lc1bp200ep400rs潍坊二村/'
     comm_url = lj_house_url + 'lc2lc1bp' + str(down_price) + 'ep' + str(up_price) + 'rs' \
         + urllib.parse.quote(comm_str)
-    print(comm_url)
+    #print(comm_url)
     try:
         xiao_html_doc = urllib.request.urlopen(comm_url).read()
         xiaoqu_soup = BeautifulSoup(xiao_html_doc, 'html.parser')
@@ -74,7 +74,7 @@ def getHouseInfoForOneCommu(community, house_list):
         print("search %s failed!\n" %comm_str)
         return house_list
 
-    print(house_num)
+    #print(house_num)
 
     if house_num == 0:
         print('no house found')
@@ -114,25 +114,37 @@ def getHouseInfoForOneCommu(community, house_list):
 
 
 # Start from here
+
+# 1. extract the best schools' info into se.xls
+excel_parser.school_estate_parser(excel_parser.pd_in_file, excel_parser.school_list, '浦东新区')
+
+# 2. get all the school names, to create files by school name
 school_list = excel_parser.get_all_school_list(excel_parser.se_file)
 for school in school_list:
     school_name = str(school).strip('[]').strip('\'')
     view_house.reset_json_files(school_name)
 
-# a stub to store in house_info.json
+# 3. it's a stub to store in house_info.json
 view_house.reset_json_files(view_house.stub_info_file)
 
-# store all the data into database by school name
+# 4. store all the data into database by school name, not finished yet;
+# still store the data in house_info.json temparily
 community_list = excel_parser.get_all_community_list(excel_parser.se_file)
 all_house_data = []
 for community in community_list:
     getHouseInfoForOneCommu(community, all_house_data)
     #all_house_data.append(getHouseInfoForOneCommu(community))
 
+# 5. format school info files into a valid json format
 for school in school_list:
     school_name = str(school).strip('[]').strip('\'')
     view_house.format_json_files(school_name)
 
-# store all the data into excel to check
+# 6. store all the data into excel to check
 house_df = pd.DataFrame(all_house_data)
 house_df.to_excel(view_house.data_dir + 'lianjia_house_info.xls')
+
+# 7. sorted by price
+house_df = house_df.sort_values(by=4)
+house_df.to_excel(view_house.data_dir + 'lianjia_house_sorted.xls')
+
